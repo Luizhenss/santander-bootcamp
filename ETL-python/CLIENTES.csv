@@ -1,6 +1,6 @@
-IdClient;NameClient
-1;Jose Josefino
-2;Fulano da Silva
-3;Chico Bento
-4;Ciclano Pereira
-5;Jonas Filho
+IdClient;NameClient;CurrentAccount
+1;Jose Josefino;1
+2;Fulano da Silva;2
+3;Chico Bento;3
+4;Ciclano Pereira;4
+5;Jonas Filho;5
