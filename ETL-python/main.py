@@ -1,4 +1,5 @@
 import pandas as pd
+import csv
 
 def load_client(cc):
     data = pd.read_csv('ETL-python/CLIENTES.csv', delimiter=';')
@@ -23,6 +24,7 @@ def load_client(cc):
 
     for key, conta in formatted_dict.items():
         if conta['CurrentAccount'] == int(cc):
+            data.to_csv('ETL-python/CLIENTES.csv', mode='w',index=False, sep=';')
             return conta
         
     return False
@@ -49,10 +51,9 @@ def load_account(user_id):
 
     for key, contas in formatted_dict.items():
         if contas['IdClient'] == int(user_id):
-            conta = contas
-            break
-
-    return conta['Account']
+            data.to_csv('ETL-python/CONTAS.csv', mode='w',index=False, sep=';')
+            return contas['Account']
+            
 
 def load_balance(user_id):
     data = pd.read_csv('ETL-python/SALDO.csv', delimiter=';')
@@ -76,9 +77,8 @@ def load_balance(user_id):
 
     for key, conta in contas.items():
         if conta['IdClient'] == int(user_id):
-            break
-
-    return conta
+            data.to_csv('ETL-python/SALDO.csv', mode='w',index=False, sep=';')
+            return conta
 
 def bar():
     print(f'''
@@ -101,6 +101,8 @@ def start_program():
     conta = load_client(cc)
     if conta == False:
         print('Conta não existente, digite uma conta válida.')
+        bar()
+
         start_program()
 
     num_conta = load_account(conta['IdClient'])
@@ -114,7 +116,6 @@ Olá {conta['NameClient']}''')
 
     while restart:
         restart = exec_actions(conta, num_conta, conta_saldo)
-
 
 def exec_actions(conta, num_conta, conta_saldo):    
 
@@ -148,7 +149,6 @@ Qual ação deseja realizar?
         bar()
 
     elif action == '3':
-        data = pd.read_csv('ETL-python/SALDO.csv', delimiter=';')
 
         movimentacao = input(f'''
             
@@ -161,41 +161,94 @@ Qual movimentação deseja realizar?
 |                  |             
 \------------------/  
 
-    | ''')
+| ''')
         
         bar()
         
         if movimentacao == '1':
+
             val_saque = input(f'''
 Qual valor deseja sacar?
 | ''')  
             
             bar()
             if conta_saldo['Balance'] >= float(val_saque):
-                novo_valor = conta_saldo['Balance'] + float(val_saque)
+                novo_valor = conta_saldo['Balance'] - float(val_saque)
 
-                data.loc[data['IdClient'] == conta_saldo['IdClient'], 'Balance'] - float(val_saque)
-                data.to_csv('ETL-python/SALDO.csv', index=False, sep=';')
+                arquivo_csv = 'ETL-python/SALDO.csv'
+                linhas = []
 
-                print(f'Valor sacado com sucesso em sua conta, seu novo saldo é de: {novo_valor}')
+                with open(arquivo_csv, 'r', newline='') as arquivo_csv:
+                    leitor = csv.reader(arquivo_csv, delimiter=';')
+                    for linha in leitor:
+                        linhas.append(linha) 
+
+                # Encontrar o índice da coluna 'IdClient' e 'Balance'
+                cabecalho = linhas[0]
+                indice_idclient = cabecalho.index('IdClient')
+                indice_balance = cabecalho.index('Balance')
+
+                # Encontrar a linha com IdClient igual a 1 e atualizar o Balance
+                id_alvo = str(conta['IdClient'])
+
+                for linha in linhas:
+                    if linha[indice_idclient] == id_alvo:
+                        linha[indice_balance] = novo_valor
+                        break 
+
+                # Escrever as linhas de volta no CSV
+                arquivo_csv = 'ETL-python/SALDO.csv'
+                with open(arquivo_csv, 'w', newline='') as arquivo_csv:
+                    escritor = csv.writer(arquivo_csv, delimiter=';')
+                    escritor.writerows(linhas)
+
+                print(f'Valor sacado com sucesso em sua conta, seu novo saldo é de: R${novo_valor:,.2f}')
+                bar()
             else:
                 print('Conta não possui valor dísponivel para saque!')
-
+                bar()
         elif movimentacao == '2':
             val_saque = input(f'''
 Qual valor deseja depositar?
 | ''')
-            
+
             bar()
 
             novo_valor = conta_saldo['Balance'] + float(val_saque)
 
-            data.loc[data['IdClient'] ==  conta_saldo['IdClient'], 'Balance'] + novo_valor
+            arquivo_csv = 'ETL-python/SALDO.csv'
+            linhas = []
 
-            data.to_csv('ETL-python/SALDO.csv', mode='w',index=False, sep=';')
+            with open(arquivo_csv, 'r', newline='') as arquivo_csv:
+                leitor = csv.reader(arquivo_csv, delimiter=';')
+                for linha in leitor:
+                    linhas.append(linha) 
 
-            print(f'Valor depositado com sucesso em sua conta, seu novo saldo é de: {novo_valor}')
+            # Encontrar o índice da coluna 'IdClient' e 'Balance'
+            cabecalho = linhas[0]
+            indice_idclient = cabecalho.index('IdClient')
+            indice_balance = cabecalho.index('Balance')
 
+            # Encontrar a linha com IdClient igual a 1 e atualizar o Balance
+            id_alvo = str(conta['IdClient'])
+            nova_quantidade = novo_valor
+
+            for linha in linhas:
+                if linha[indice_idclient] == id_alvo:
+                    saldo_atual = float(linha[indice_balance])
+                    novo_saldo = saldo_atual + nova_quantidade
+                    linha[indice_balance] = novo_saldo
+                    break 
+
+            # Escrever as linhas de volta no CSV
+            arquivo_csv = 'ETL-python/SALDO.csv'
+            with open(arquivo_csv, 'w', newline='') as arquivo_csv:
+                escritor = csv.writer(arquivo_csv, delimiter=';')
+                escritor.writerows(linhas)
+
+            print(f'Valor depositado com sucesso em sua conta, seu novo saldo é de: R${novo_valor:,.2f}')
+            bar()
+            
     restart = input(f'''
 Deseja realizar outra operação?
     
@@ -210,9 +263,10 @@ Deseja realizar outra operação?
 
     bar()
 
-    return True if restart == True else False 
+    return True if restart == '1' else False 
 
 start_program()
+
 '''
     Realizar ETL(Extract, Transform, Load), 
     para consultar contas, saldos, realizar movimentações e contas inativas ou ativas de clientes de um banco
@@ -220,4 +274,5 @@ start_program()
     1 - Consultar Conta
     2 - Consultar Saldo
     3 - Realizar movimentação
+
 '''
