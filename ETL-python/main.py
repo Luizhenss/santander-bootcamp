@@ -85,6 +85,7 @@ def bar():
 --------------------------------------------------------------------------------------------------''')
     
 def start_program():
+    
     cc = input(f'''
 /----------------------------------------------------------------------\ 
 |                                                                      |
@@ -96,25 +97,24 @@ def start_program():
                
 | ''' )
     
-    bar()
-
-    conta = load_client(cc)
-    if conta == False:
-        print('Conta não existente, digite uma conta válida.')
+    restart = True
+    while restart:
         bar()
 
-        start_program()
+        conta = load_client(cc)
+        if conta == False:
+            print('Conta não existente, digite uma conta válida.')
+            bar()
 
-    num_conta = load_account(conta['IdClient'])
+            start_program()
 
-    conta_saldo = load_balance(conta['IdClient'])
+        num_conta = load_account(conta['IdClient'])
 
-    print(f'''
+        conta_saldo = load_balance(conta['IdClient'])
+
+        print(f'''
 Olá {conta['NameClient']}''') 
 
-    restart = True
-
-    while restart:
         restart = exec_actions(conta, num_conta, conta_saldo)
 
 def exec_actions(conta, num_conta, conta_saldo):    
@@ -135,14 +135,14 @@ Qual ação deseja realizar?
 
     if action == '1':
         print(f'''
-    Nome: {conta['NameClient']}
-    Conta Corrent: {conta['CurrentAccount']}
-    Número da conta: {num_conta} ''')
+Nome: {conta['NameClient']}
+Conta Corrente: {str(conta['CurrentAccount']).zfill(3)}
+Número da conta: {num_conta} ''')
 
         bar()
     elif action == '2':
         print(f'''
-    O seu saldo é de R${conta_saldo['Balance']:,.2f}
+O seu saldo é de R${conta_saldo['Balance']:,.2f}
     '''
         )
 
@@ -193,7 +193,7 @@ Qual valor deseja sacar?
 
                 for linha in linhas:
                     if linha[indice_idclient] == id_alvo:
-                        linha[indice_balance] = novo_valor
+                        linha[indice_balance] = str(f'{novo_valor:,.2f}')
                         break 
 
                 # Escrever as linhas de volta no CSV
@@ -234,7 +234,7 @@ Qual valor deseja depositar?
 
             for linha in linhas:
                 if linha[indice_idclient] == id_alvo:
-                    linha[indice_balance] = novo_saldo
+                    linha[indice_balance] = str(f'{novo_valor:,.2f}')
                     break 
 
             # Escrever as linhas de volta no CSV
