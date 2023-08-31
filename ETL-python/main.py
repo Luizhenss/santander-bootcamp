@@ -231,12 +231,9 @@ Qual valor deseja depositar?
 
             # Encontrar a linha com IdClient igual a 1 e atualizar o Balance
             id_alvo = str(conta['IdClient'])
-            nova_quantidade = novo_valor
 
             for linha in linhas:
                 if linha[indice_idclient] == id_alvo:
-                    saldo_atual = float(linha[indice_balance])
-                    novo_saldo = saldo_atual + nova_quantidade
                     linha[indice_balance] = novo_saldo
                     break 
 
